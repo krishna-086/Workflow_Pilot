@@ -175,7 +175,7 @@ workflowpilot/
 
 ```bash
 # Clone repository
-git clone <repo-url>
+git clone https://github.com/krishna-086/Workflow_Pilot.git
 cd workflowpilot
 
 # Create virtual environment
