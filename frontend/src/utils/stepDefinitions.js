@@ -1,0 +1,32 @@
+export const STEP_DEFINITIONS = {
+  onboarding: [
+    { key: 'classify', label: 'Initialize', icon: '🚀', agent: 'Orchestrator' },
+    { key: 'ad', label: 'Create AD Account', icon: '🔑', agent: 'Provisioner' },
+    { key: 'jira', label: 'Create JIRA Account', icon: '📋', agent: 'Provisioner', canError: true },
+    { key: 'retry', label: 'Error Recovery', icon: '🔄', agent: 'Recovery Agent', isRetry: true },
+    { key: 'escalate', label: 'Escalate to IT', icon: '🚨', agent: 'Recovery Agent', isEscalate: true },
+    { key: 'email', label: 'Create Email', icon: '📧', agent: 'Provisioner' },
+    { key: 'buddy', label: 'Assign Buddy', icon: '🤝', agent: 'People Agent' },
+    { key: 'orient', label: 'Schedule Orientation', icon: '📅', agent: 'People Agent' },
+    { key: 'welcome', label: 'Send Welcome Pack', icon: '🎉', agent: 'Comms Agent' },
+    { key: 'final', label: 'Complete', icon: '✅', agent: 'Orchestrator' },
+  ],
+  meeting: [
+    { key: 'classify', label: 'Initialize', icon: '🚀', agent: 'Orchestrator' },
+    { key: 'extract', label: 'Extract Action Items', icon: '🔍', agent: 'NLP Analyst' },
+    { key: 'owners', label: 'Identify Owners', icon: '👥', agent: 'NLP Analyst' },
+    { key: 'human', label: 'Human Clarification', icon: '🙋', agent: 'Human', isHuman: true },
+    { key: 'tasks', label: 'Create Tasks', icon: '📝', agent: 'Task Manager' },
+    { key: 'summary', label: 'Send Summary', icon: '📤', agent: 'Comms Agent' },
+    { key: 'final', label: 'Complete', icon: '✅', agent: 'Orchestrator' },
+  ],
+  sla: [
+    { key: 'classify', label: 'Initialize', icon: '🚀', agent: 'Orchestrator' },
+    { key: 'detect', label: 'Detect Breach', icon: '⚠️', agent: 'SLA Monitor' },
+    { key: 'bottleneck', label: 'Root Cause', icon: '🔎', agent: 'SLA Monitor' },
+    { key: 'delegate', label: 'Find Delegate', icon: '🔗', agent: 'SLA Monitor' },
+    { key: 'reroute', label: 'Reroute Approval', icon: '↩️', agent: 'SLA Monitor' },
+    { key: 'compliance', label: 'Compliance Record', icon: '📜', agent: 'Compliance' },
+    { key: 'final', label: 'Complete', icon: '✅', agent: 'Orchestrator' },
+  ],
+}
