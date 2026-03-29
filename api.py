@@ -4,6 +4,7 @@ import os
 from uuid import uuid4
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
@@ -29,6 +30,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Serve React production build static files
+BUILD_DIR = "frontend-build"
+if os.path.exists(BUILD_DIR) and os.path.exists(os.path.join(BUILD_DIR, "assets")):
+    app.mount("/assets", StaticFiles(directory=os.path.join(BUILD_DIR, "assets")), name="static-assets")
 
 # State management - track running workflows
 active_workflows = {}  # workflow_id -> {"status": str, "result": dict, "scenario": str}
@@ -61,29 +66,14 @@ class SLARequest(BaseModel):
 # Endpoint 1: Serve frontend dashboard
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
-    """Serve the frontend dashboard."""
-    frontend_path = "frontend/index.html"
-    if os.path.exists(frontend_path):
-        return FileResponse(frontend_path)
-    else:
-        # Return a simple placeholder if frontend doesn't exist yet
-        return HTMLResponse(content="""
-        <html>
-            <head><title>WorkflowPilot</title></head>
-            <body>
-                <h1>WorkflowPilot API</h1>
-                <p>Multi-Agent Enterprise Workflow System</p>
-                <p>Frontend dashboard coming soon. Use API endpoints directly:</p>
-                <ul>
-                    <li>POST /api/workflow/onboarding</li>
-                    <li>POST /api/workflow/meeting</li>
-                    <li>POST /api/workflow/sla</li>
-                    <li>POST /api/demo/run-all</li>
-                    <li>GET /api/audit</li>
-                </ul>
-            </body>
-        </html>
-        """)
+    build_index = os.path.join("frontend-build", "index.html")
+    if os.path.exists(build_index):
+        with open(build_index, "r") as f:
+            return HTMLResponse(content=f.read())
+    elif os.path.exists("frontend/index.html"):
+        return FileResponse("frontend/index.html")
+    return HTMLResponse("<h1>Frontend not built</h1>")
+
 
 
 # Endpoint 2: Trigger onboarding workflow
@@ -374,9 +364,5 @@ async def health_check():
 
 # Server startup
 if __name__ == "__main__":
-    uvicorn.run(
-        "api:app",
-        host=settings.app_host,
-        port=settings.app_port,
-        reload=True
-    )
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("api:app", host="0.0.0.0", port=port, reload=True)
