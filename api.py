@@ -4,8 +4,8 @@ import os
 from uuid import uuid4
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import uvicorn
 
@@ -16,11 +16,21 @@ from config import settings
 from data.sample_data import SAMPLE_EMPLOYEE, SAMPLE_TRANSCRIPT, SAMPLE_PARTICIPANTS, SAMPLE_APPROVAL
 
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_BUILD_DIR = os.path.join(BASE_DIR, "frontend-build")
+FRONTEND_SOURCE_DIR = os.path.join(BASE_DIR, "frontend")
+
+
 # Create FastAPI app
 app = FastAPI(
     title="WorkflowPilot",
     description="Multi-Agent Enterprise Workflow System - ET AI Hackathon 2026"
 )
+
+# Serve compiled frontend assets when available (used in production).
+frontend_assets_dir = os.path.join(FRONTEND_BUILD_DIR, "assets")
+if os.path.isdir(frontend_assets_dir):
+    app.mount("/assets", StaticFiles(directory=frontend_assets_dir), name="frontend-assets")
 
 # Add CORS middleware (allow all origins for demo)
 app.add_middleware(
@@ -30,10 +40,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# Serve React production build static files
-BUILD_DIR = "frontend-build"
-if os.path.exists(BUILD_DIR) and os.path.exists(os.path.join(BUILD_DIR, "assets")):
-    app.mount("/assets", StaticFiles(directory=os.path.join(BUILD_DIR, "assets")), name="static-assets")
 
 # State management - track running workflows
 active_workflows = {}  # workflow_id -> {"status": str, "result": dict, "scenario": str}
@@ -66,14 +72,33 @@ class SLARequest(BaseModel):
 # Endpoint 1: Serve frontend dashboard
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
-    build_index = os.path.join("frontend-build", "index.html")
-    if os.path.exists(build_index):
-        with open(build_index, "r") as f:
-            return HTMLResponse(content=f.read())
-    elif os.path.exists("frontend/index.html"):
-        return FileResponse("frontend/index.html")
-    return HTMLResponse("<h1>Frontend not built</h1>")
+    """Serve the frontend dashboard."""
+    frontend_build_index = os.path.join(FRONTEND_BUILD_DIR, "index.html")
+    frontend_source_index = os.path.join(FRONTEND_SOURCE_DIR, "index.html")
 
+    if os.path.exists(frontend_build_index):
+        return FileResponse(frontend_build_index)
+    if os.path.exists(frontend_source_index):
+        return FileResponse(frontend_source_index)
+    else:
+        # Return a simple placeholder if frontend doesn't exist yet
+        return HTMLResponse(content="""
+        <html>
+            <head><title>WorkflowPilot</title></head>
+            <body>
+                <h1>WorkflowPilot API</h1>
+                <p>Multi-Agent Enterprise Workflow System</p>
+                <p>Frontend dashboard coming soon. Use API endpoints directly:</p>
+                <ul>
+                    <li>POST /api/workflow/onboarding</li>
+                    <li>POST /api/workflow/meeting</li>
+                    <li>POST /api/workflow/sla</li>
+                    <li>POST /api/demo/run-all</li>
+                    <li>GET /api/audit</li>
+                </ul>
+            </body>
+        </html>
+        """)
 
 
 # Endpoint 2: Trigger onboarding workflow
@@ -362,7 +387,24 @@ async def health_check():
     }
 
 
+@app.get("/{path:path}", response_class=HTMLResponse)
+async def spa_fallback(path: str):
+    """Serve SPA routes for browser refreshes on frontend paths."""
+    if path.startswith("api/"):
+        raise HTTPException(status_code=404, detail="Not found")
+
+    frontend_build_index = os.path.join(FRONTEND_BUILD_DIR, "index.html")
+    if os.path.exists(frontend_build_index):
+        return FileResponse(frontend_build_index)
+
+    raise HTTPException(status_code=404, detail="Not found")
+
+
 # Server startup
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("api:app", host="0.0.0.0", port=port, reload=True)
+    uvicorn.run(
+        "api:app",
+        host=settings.app_host,
+        port=settings.app_port,
+        reload=True
+    )
