@@ -2,6 +2,10 @@
 
 **Multi-Agent System for Autonomous Enterprise Workflows**
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-WorkflowPilot-10b981?style=for-the-badge&logo=render)](https://workflow-pilot-f0jc.onrender.com/)
+
+> **Try it now:** [https://workflow-pilot-f0jc.onrender.com/](https://workflow-pilot-f0jc.onrender.com/)
+
 WorkflowPilot is an AI-powered orchestration system that automates complex enterprise workflows using coordinated LLM agents. Built for the ET AI Hackathon 2026 (Track 2: Agentic AI), it demonstrates autonomous decision-making, error recovery, and human-in-the-loop patterns across three real-world scenarios.
 
 ![Dashboard](docs/screenshot.png)
