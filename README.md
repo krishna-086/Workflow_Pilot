@@ -391,15 +391,6 @@ Each action generates a JSON Lines entry:
 }
 ```
 
----
-
-## Team: TensorZ
-
-| Member | Role |
-|--------|------|
-| [Name] | [Role] |
-| [Name] | [Role] |
-| [Name] | [Role] |
 
 ---
 
